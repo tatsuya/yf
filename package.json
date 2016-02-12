@@ -1,0 +1,13 @@
+{
+  "name": "yf",
+  "version": "1.0.0",
+  "private": true,
+  "bin": {
+    "yf": "cli.js"
+  },
+  "dependencies": {
+    "cheerio": "^0.20.0",
+    "numeral": "^1.5.3",
+    "request": "^2.69.0"
+  }
+}
