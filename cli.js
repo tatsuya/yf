@@ -3,6 +3,8 @@
 var fs = require('fs');
 var path = require('path');
 var yargs = require('yargs');
+var numeral = require('numeral');
+var moment = require('moment');
 
 var yf = require('./');
 
@@ -23,6 +25,10 @@ function readConfig() {
   } catch (e) {
     throw new Error('Failed to parse JSON config');
   }
+}
+
+function output(price) {
+  console.log('%s (%s)', numeral(price).format('0,0'), moment().format('LTS'));
 }
 
 var argv = yargs
@@ -58,7 +64,7 @@ if (argv.w) {
       console.log(err.message);
       process.exit(1);
     }
-    console.log(data.price);
+    output(data.price);
 
     setInterval(function() {
       yf(code, function(err, data) {
@@ -66,7 +72,7 @@ if (argv.w) {
           console.log(err.message);
           process.exit(1);
         }
-        console.log(data.price);
+        output(data.price);
       });
     }, argv.w * 1000);
   });
@@ -77,6 +83,6 @@ if (argv.w) {
       console.log(err.message);
       process.exit(1);
     }
-    console.log(data.price);
+    output(data.price);
   });
 }
