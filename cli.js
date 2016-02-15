@@ -2,6 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
+var yargs = require('yargs');
 
 var yf = require('./');
 
@@ -11,8 +12,8 @@ function readConfig() {
   try {
     stats = fs.statSync(filepath);
   } catch (e) {
-    console.log('usage: yf <code>');
-    process.exit(0);
+    yargs.showHelp();
+    process.exit(1);
   }
 
   var file = fs.readFileSync(filepath);
@@ -24,24 +25,58 @@ function readConfig() {
   }
 }
 
+var argv = yargs
+  .usage('Usage: yf <code> [options]')
+  .option('w', {
+    alias: 'watch',
+    desc: 'Interval in seconds to watch price periodically'
+  })
+  .help('h')
+  .alias('h', 'help')
+  .version(function() {
+    return require('./package').version;
+  })
+  .argv;
+
 
 var code;
-var argv = process.argv.slice(2);
-if (argv.length > 0) {
-  code = argv.shift();
+
+if (argv._.length > 0) {
+  code = argv._.shift();
 } else {
   var config = readConfig();
   if (!config.code) {
-    console.log('usage: yf <code>');
+    yargs.showHelp();
     process.exit(1);
   }
   code = config.code;
 }
 
-yf(code, function(err, data) {
-  if (err) {
-    console.log(err.message);
-    process.exit(1);
-  }
-  console.log(data.price);
-});
+if (argv.w) {
+  yf(code, function(err, data) {
+    if (err) {
+      console.log(err.message);
+      process.exit(1);
+    }
+    console.log(data.price);
+
+    setInterval(function() {
+      yf(code, function(err, data) {
+        if (err) {
+          console.log(err.message);
+          process.exit(1);
+        }
+        console.log(data.price);
+      });
+    }, argv.w * 1000);
+  });
+
+} else {
+  yf(code, function(err, data) {
+    if (err) {
+      console.log(err.message);
+      process.exit(1);
+    }
+    console.log(data.price);
+  });
+}
